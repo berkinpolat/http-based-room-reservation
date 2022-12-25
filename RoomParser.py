@@ -5,11 +5,11 @@ HOUR_LIST = ['9', '10', '11', '12', '13', '14', '15', '16', '17']
 NOT_FOUND = ['404']
 BAD_REQUEST = ['400']
 
-MAIN_PATTERN = '\d+\/(.*)\?'
-RESERVE_PATTERN = '\d+\/reserve\?name=([^\s;\/?:@&=$,]*)&day=([^\s;\/?:@&=$,]*)&hour=([^\s;\/?:@&=$,]*)&duration=([^\s;\/?:@&=$,]*)&{0,1}'
-ADD_PATTERN = '\d+\/add\?name=([^\s;\/?:@&=$,]*)&{0,1}'
-REMOVE_PATTERN = '\d+\/remove\?name=([^\s;\/?:@&=$,]*)&{0,1}'
-AVAILABILITY_PATTERN = '\d+\/checkavailability\?name=([^\s;\/?:@&=$,]*)&day=([^\s;\/?:@&=$,]*)&{0,1}'
+MAIN_PATTERN = ':\d{4}\/(.*)\?'
+RESERVE_PATTERN = '\d+\/reserve\?name=([^&]*)&day=([^&]*)&hour=([^&]*)&duration=([^&]*)&{0,1}'
+ADD_PATTERN = '\d+\/add\?name=([^&]*)&{0,1}'
+REMOVE_PATTERN = '\d+\/remove\?name=([^&]*)&{0,1}'
+AVAILABILITY_PATTERN = '\d+\/checkavailability\?name=([^&]*)&day=([^&]*)&{0,1}'
 
 
 # GENERAL PURPOSE FUNCTIONS
@@ -65,7 +65,6 @@ def checkValues(variable_list):
 
 # 404 NOT FOUND FUNCTION
 def check404(request, get_type):
-
     # Select a regex pattern according to the get type
     pattern = ""
     if get_type == "add":
@@ -87,6 +86,11 @@ def check404(request, get_type):
     except AttributeError:
         return NOT_FOUND
 
+    # ;\/?:@&=$, are delimiters in URLs, so they shouldn't be used in variable values.
+    for item in variables:
+        if re.search(r'[\s;\/?:@&=$,]', item):
+            return NOT_FOUND
+
     # Check the correctness of the values.
     # If there is a problem with the values, throw a BAD REQUEST error.
     response = checkValues(variables)
@@ -96,7 +100,7 @@ def check404(request, get_type):
     if not response:
         return BAD_REQUEST
     else:
-        response = ['200']
+        response = ['200', get_type]
         for variable in variables:
             response.append(variable)
         return response
@@ -116,13 +120,13 @@ def main(request):
 
 
 # ADD TEST
-print(main("http://192.168.1.79:5050/add?name=M2Z05"))
+print("ADD", main("http://192.168.1.79:5050/add?name=M2Z05"))
 
 # REMOVE TEST
-print(main("http://192.168.1.79:5050/remove?name=M2Z05"))
+print("REMOVE", main("http://192.168.1.79:5050/remove?name=M2Z05"))
 
 # RESERVE TEST
-print(main("http://192.168.1.79:5050/reserve?name=M2Z05&day=3&hour=9&duration=1"))
+print("RESERVE", main("http://192.168.1.79:5050/reserve?name=M2Z05&day=7&hour=9&duration=1"))
 
 # AVAILABILITY TEST
-print(main("http://192.168.1.79:5050/checkavailability?name=M2Z05&day=3"))
+print("AVAILABILITY", main("http://192.168.1.79:5050/checkavailability?name=M2Z05&day=3"))
