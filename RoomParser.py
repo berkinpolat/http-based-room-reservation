@@ -1,11 +1,5 @@
 import re
 
-# . al ama float olmasin
-# sonda parametre ekleme
-# parametre 0'dan büyük olcak -> uzunluk
-# değerler yanlış: 400
-# link yanlış: 404
-
 DAY_LIST = ['1', '2', '3', '4', '5', '6', '7']
 HOUR_LIST = ['9', '10', '11', '12', '13', '14', '15', '16', '17']
 NOT_FOUND = ['404']
@@ -46,44 +40,8 @@ def checkHourAndDurationRule(hour, duration):
     else:
         return False
 
-"""
-# RESERVE ROOM HELPER FUNCTIONS
-def checkReserveValues(variable_list):
-    name = variable_list[0]
-    day = variable_list[1]
-    hour = variable_list[2]
-    duration = variable_list[3]
 
-    if day in DAY_LIST:
-        if hour in HOUR_LIST:
-            try:
-                hour = int(hour)
-                day = int(day)
-                duration = int(duration)
-            except ValueError:
-                return False
-            if (duration > 0) and (9 <= (hour + duration)) and (17 >= (hour + duration)):
-                return True
-    return False
-"""
-"""
-# RESERVE ROOM MAIN FUNCTION
-def reserve(request):
-    try:
-        variables = re.search(RESERVE_PATTERN, request).groups()
-
-    except AttributeError:
-        return NOT_FOUND
-
-    response = checkReserveValues(variables)
-
-    if not response:
-        return BAD_REQUEST
-    else:
-        return response
-
-"""
-# ADD-REMOVE-AVAILABILITY HELPER FUNCTIONS
+# 400 BAD REQUEST FUNCTION
 def checkValues(variable_list):
     # check if any variable is null
     if ListContainsNull(variable_list):
@@ -105,8 +63,10 @@ def checkValues(variable_list):
     return True
 
 
-# FUNCTION
+# 404 NOT FOUND FUNCTION
 def check404(request, get_type):
+
+    # Select a regex pattern according to the get type
     pattern = ""
     if get_type == "add":
         pattern = ADD_PATTERN
@@ -119,14 +79,20 @@ def check404(request, get_type):
     else:
         return NOT_FOUND
 
+    # Parse the request according to the pattern.
+    # If it's not parsed without an error, throw a NOT FOUND error.
     try:
         variables = re.search(pattern, request).groups()
 
     except AttributeError:
         return NOT_FOUND
 
+    # Check the correctness of the values.
+    # If there is a problem with the values, throw a BAD REQUEST error.
     response = checkValues(variables)
 
+    # If there is a BAD REQUEST, return ['400']
+    # If there is no error, return ['200', 'V', ..., 'V'] where 'V' is a value of the request.
     if not response:
         return BAD_REQUEST
     else:
