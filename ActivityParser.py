@@ -3,9 +3,9 @@ NOT_FOUND = ['404']
 BAD_REQUEST = ['400']
 
 MAIN_PATTERN = ':\d{4}\/(.*)\?'
-ADD_PATTERN = '\d+\/add\?name=([^&]*)&{0,1}$'
-REMOVE_PATTERN = '\d+\/remove\?name=([^&]*)&{0,1}$'
-CHECK_PATTERN = '\d+\/check\?name=([^&]*)&{0,1}$'
+ADD_PATTERN = '\d+\/add\?name=([^&]*)&{0,1}'
+REMOVE_PATTERN = '\d+\/remove\?name=([^&]*)&{0,1}'
+CHECK_PATTERN = '\d+\/check\?name=([^&]*)&{0,1}'
 
 # GENERAL PURPOSE FUNCTIONS
 def ListContainsNull(variable_list):
@@ -72,30 +72,34 @@ def check404(request, get_type):
     if not response:
         return BAD_REQUEST
     else:
-        response = ['200']
+        response = ['200', get_type]
         for variable in variables:
             response.append(variable)
         return response
 
 
+def ROOM_client_message_to_url(message):
+    message_firstline_arr = message.split('\n')[0].split(' ')
+
+    protocol = message_firstline_arr[2].split('/')[0].lower() + "://"
+    address=message_firstline_arr[1]
+    host=message.split('\n')[1].split("Host: ")[1]
+    URL = protocol+host+address
+    return URL
+
+
 def main(request):
     try:
-        get_type = re.search(MAIN_PATTERN, request).group(1)
+        url = ROOM_client_message_to_url(request)
+        if "favicon.ico" in url:
+            return ['200', 'favicon']
+
+        get_type = re.search(MAIN_PATTERN, url).group(1)
 
         if get_type in ["add", "remove", "check"]:
-            return check404(request, get_type)
+            return check404(url, get_type)
         else:
             raise AttributeError
 
     except AttributeError:
         return NOT_FOUND
-
-
-# ADD TEST
-print("ADD", main("http://192.168.1.79:5050/add?name=M2Z05"))
-
-# REMOVE TEST
-print("REMOVE", main("http://192.168.1.79:5050/remove?name=M2Z05"))
-
-# CHECK TEST
-print("CHECK", main("http://192.168.1.79:5050/check?name=M2Z05"))
