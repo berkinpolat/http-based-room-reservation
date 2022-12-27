@@ -132,39 +132,3 @@ def main(request):
 
     except AttributeError:
         return NOT_FOUND
-
-reserve_valued="GET /reserve?name=M2Z05&day=7&hour=9&duration=1 HTTP/1.1"
-
-favicon = "GET /favicon.ico HTTP/1.1"
-
-client_full_message = f"""{favicon}
-Host: 127.0.0.1:5050
-Connection: keep-alive
-sec-ch-ua: "Not?A_Brand";v="8", "Chromium";v="108", "Google Chrome";v="108"
-sec-ch-ua-mobile: ?0
-sec-ch-ua-platform: "macOS"
-Upgrade-Insecure-Requests: 1
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,/;q=0.8,application/signed-exchange;v=b3;q=0.9
-Sec-Fetch-Site: none
-Sec-Fetch-Mode: navigate
-Sec-Fetch-User: ?1
-Sec-Fetch-Dest: document
-Accept-Encoding: gzip, deflate, br
-Accept-Language: tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7"""
-
-print(main(client_full_message))
-
-"""
-# ADD TEST
-print("ADD", main("http://192.168.1.79:5050/add?name=M2Z05"))
-
-# REMOVE TEST
-print("REMOVE", main("http://192.168.1.79:5050/remove?name=M2Z05"))
-
-# RESERVE TEST
-print("RESERVE", main("http://192.168.1.79:5050/reserve?name=M2Z05&day=7&hour=9&duration=1"))
-
-# AVAILABILITY TEST
-print("AVAILABILITY", main("http://192.168.1.79:5050/checkavailability?name=M2Z05&day=3"))
-"""
