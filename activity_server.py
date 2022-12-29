@@ -153,7 +153,7 @@ if __name__ == "__main__":
 
     ## Socket attributes initializations
     BUFF_SIZE = 2048                                                     ## set the chunk size
-    PORT = 5050                                                          ## set port for server
+    PORT = 5052                                                          ## set port for server
     SERVER = socket.gethostbyname(socket.gethostname())                  ## get hos ip
     ADDR = (SERVER, PORT)                                                ## fully address tupple
     FORMAT = 'utf-8'                                                     ## encode/decode format
