@@ -1,6 +1,7 @@
 import json
 import socket 
 import RoomParser as rp ## Import parser
+import os
 
 ## HTTP Error messages initialized
 general_404_err = "HTTP/1.1 404 Not Found\nContent-Type: text/html\n\n<html><head><title>Error</title></head><body><h1>Page Not Found</h1></body></html>"
@@ -179,7 +180,7 @@ def room_server_listen(BUFF_SIZE,ADDR,FORMAT,ROOM_SERVER):
           Therefore, there are some necessary initializations exists below for accessing the JSON Database
     """
     JSON_FNAME="rooms.json"
-    JSON_FPATH="/Users/berkinpolat/Downloads/room-actv-server/base/"
+    JSON_FPATH=os.getcwd() + '/'
     JSON_ATTR_ROOMS="rooms"
     JSON_ATTR_ROOM_NAME="room_name"
     JSON_ATTR_SCHED="schedule"
