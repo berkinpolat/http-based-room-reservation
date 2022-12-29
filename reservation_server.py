@@ -54,7 +54,8 @@ def room_reserver(parser_response):
         JSON_ATTR_ACT_NAME="activity_name"
         JSON_ATTR_DAY="day"
         JSON_ATTR_INTERVAL="interval" 
-        interval = server_response.split('.')[1].split(' ')[-1]
+
+        interval= f"{hour}:00 - {int(hour)+int(duration)}:00"
         try:
           with open(f"{JSON_FPATH}{JSON_FNAME}", "r") as f:
             json_reservation_database = json.load(f)
@@ -106,7 +107,7 @@ def list_availablity_day(parser_response):
 """Lists all the available hours for all days of the week (after
 contacting the Room Server probably several times). (HTTP 200 OK is returned in success. In
 case of error relevant error messages will be sent as described above)."""
-def list_availablity():
+def list_availablity(parser_response):
     room_name = parser_response[2]
     JSON_FNAME="rooms.json"
     JSON_FPATH=os.getcwd() + '/'
@@ -123,11 +124,13 @@ def list_availablity():
       server_response = room_server.check_availability(room_name,i,
                         JSON_FNAME,JSON_FPATH,JSON_ATTR_ROOMS,JSON_ATTR_ROOM_NAME,
                         JSON_ATTR_SCHED,JSON_ATTR_DAY,JSON_ATTR_UNRES)
-      body = server_response.split(":")[2]
+      body = server_response.split("-")[2]
       iterate_day = f"{days_of_week[i-1]}: {body}"
       result.append(iterate_day)
+    
+    printed_result = ('\n'.join(map(str, result)))
 
-    return f"HTTP/1.1 200 OK\nContent-Type: text/plain\n\nAvailable hours for the {given_name} on\n  {result}"
+    return f"HTTP/1.1 200 OK\nContent-Type: text/plain\n\nAvailable hours for the {room_name} on\n\n{printed_result}"
 
 def display_reservation_id(parser_response):
 
@@ -150,7 +153,7 @@ def display_reservation_id(parser_response):
 
     reservations = json_database[JSON_ATTR_RESERVATIONS]
     found_flag = False
-    for i, reservation in (reservations):
+    for i, reservation in enumerate(reservations):
       if str(reservation[JSON_ATTR_RESERVATION_ID]) == str(res_id):
         found_flag = True
         res_details = reservation
@@ -159,7 +162,7 @@ def display_reservation_id(parser_response):
     if not found_flag:
       return LIST_403_FORBIDDEN
 
-    return RMV_200_OK
+    return f"HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><body><p>Details about Reservation with id {res_id} is {res_details}.</p></body></html>"
 
 
 
@@ -197,24 +200,34 @@ def reservation_server_listen(BUFF_SIZE,ADDR,FORMAT,RESERVATION_SERVER):
 
         try:
           if str(parser_response[0])==str(400):
-              server_response=general_400_err
-       
+                server_response=general_400_err
+        
           elif str(parser_response[0])==str(404):
-              server_response = general_404_err
+                server_response = general_404_err
 
           elif str(parser_response[0])==str(200):     
 
             if str(parser_response[1])=="reserve":
-              server_response=room_reserver(parser_response)
+                server_response=room_reserver(parser_response)
             elif str(parser_response[1])=="listavailability":
-              server_response=list_availablity()
+              if (len(parser_response) == 3):
+                  server_response=list_availablity(parser_response)
+              else:
+                  server_response=list_availablity_day(parser_response)
             elif str(parser_response[1])=="display":
-              server_response=display_reservation_id()
-
+                server_response=display_reservation_id(parser_response)
         except Exception as e:
           server_response=general_404_err  
 
-    return None
+
+        
+
+        socket.send(server_response.encode(FORMAT))                                                                   ## sending proper http response to client
+        print("-------------> [SENDING MESSAGE TO CLIENT] --> PROPER HTTP MESSAGE WILL BE SHOWN IN THE WEB BROWSER")  ## server log message
+        socket.close()                                                                                                ## end session
+        print(f"\n-------------> [CONNECTION CLOSING] --> Connection with {address} ended!")                          ## server log message
+        print("\n*****************************************************************************************************************************")
+
 
 ## Main method
 if __name__ == "__main__":

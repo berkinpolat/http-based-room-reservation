@@ -20,6 +20,7 @@ def check_availability(given_name,given_day,
                       JSON_FNAME,JSON_FPATH,JSON_ATTR_ROOMS,JSON_ATTR_ROOM_NAME,
                       JSON_ATTR_SCHED,JSON_ATTR_DAY,JSON_ATTR_UNRES):
     days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    given_day = int(given_day)
     DAY_STRING=days_of_week[given_day - 1]
     try:
         with open(f"{JSON_FPATH}{JSON_FNAME}", "r") as f:
@@ -32,7 +33,7 @@ def check_availability(given_name,given_day,
                         available_hours = schedule[JSON_ATTR_UNRES]
                         formatted_hours = [f"{hour}:00" for hour in available_hours]
                         body = " ".join(formatted_hours)
-                        return f"HTTP/1.1 200 OK\nContent-Type: text/plain\n\nAvailable hours for the {given_name} on {DAY_STRING}: {body}"
+                        return f"HTTP/1.1 200 OK\nContent-Type: text/plain\n\nAvailable hours for the {given_name} on {DAY_STRING} -  {body}"
         
         return f"HTTP/1.1 404 Not Found\nContent-Type: text/html\n\n<html><head><title>Error</title></head><body><h1>Not Found</h1><p>No room named {given_name} found on the database.</p></body></html>"
     except Exception as e:
@@ -86,6 +87,10 @@ def reserve_room(given_room_name,given_day,given_hour,given_duration,
                       JSON_FNAME,JSON_FPATH,JSON_ATTR_ROOMS,JSON_ATTR_ROOM_NAME,
                       JSON_ATTR_SCHED,JSON_ATTR_DAY,JSON_ATTR_UNRES,JSON_ATTR_RES):
   
+  given_day = int(given_day)
+  given_hour = int(given_hour)
+  given_duration = int(given_duration)
+
   days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
   DAY_STRING=days_of_week[given_day - 1]
   get_time_range = lambda hour, duration: f"{given_hour}:00 - {given_hour + given_duration}:00"
