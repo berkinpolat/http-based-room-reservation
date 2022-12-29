@@ -1,4 +1,5 @@
 import json
+import os
 import socket 
 import ActivityParser as ap ## Import parser
 
@@ -109,7 +110,7 @@ def actv_server_listen(BUFF_SIZE,ADDR,FORMAT,ROOM_SERVER):
           Therefore, there are some necessary initializations exists below for accessing the JSON Database
     """
     JSON_FNAME="activities.json"
-    JSON_FPATH="/Users/berkinpolat/Downloads/room-actv-server/base/"
+    JSON_FPATH= os.getcwd() + '/'
     JSON_ATTR_ACTIVITIES="activities"
     JSON_ATTR_ACT_NAME="activity_name"
 
