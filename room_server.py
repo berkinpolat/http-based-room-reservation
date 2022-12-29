@@ -7,6 +7,15 @@ import os
 general_404_err = "HTTP/1.1 404 Not Found\nContent-Type: text/html\n\n<html><head><title>Error</title></head><body><h1>Page Not Found</h1></body></html>"
 general_400_err = "HTTP/1.1 400 Bad Request\nContent-Type: text/html\n\n<html><head><title>Bad Request</title></head><body></body></html>"
 
+JSON_FNAME="rooms.json"
+JSON_FPATH=os.getcwd() + '/'
+JSON_ATTR_ROOMS="rooms"
+JSON_ATTR_ROOM_NAME="room_name"
+JSON_ATTR_SCHED="schedule"
+JSON_ATTR_DAY="day"
+JSON_ATTR_UNRES="unres_hours" 
+JSON_ATTR_RES="res_hours" 
+
 """
 This method checks the availabilty of the room by interacting JSON Database. Method interacts the JSON Database 
 by using its parameter which are arranged in main. 
@@ -184,14 +193,6 @@ def room_server_listen(BUFF_SIZE,ADDR,FORMAT,ROOM_SERVER):
           if a proper request comes,the server should interact with the our simple database(JSON File). 
           Therefore, there are some necessary initializations exists below for accessing the JSON Database
     """
-    JSON_FNAME="rooms.json"
-    JSON_FPATH=os.getcwd() + '/'
-    JSON_ATTR_ROOMS="rooms"
-    JSON_ATTR_ROOM_NAME="room_name"
-    JSON_ATTR_SCHED="schedule"
-    JSON_ATTR_DAY="day"
-    JSON_ATTR_UNRES="unres_hours" 
-    JSON_ATTR_RES="res_hours" 
     
     while True:
         socket , address = ROOM_SERVER.accept()                                                             ## accept client

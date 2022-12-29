@@ -7,6 +7,11 @@ import ActivityParser as ap ## Import parser
 general_404_err = "HTTP/1.1 404 Not Found\nContent-Type: text/html\n\n<html><head><title>Error</title></head><body><h1>Page Not Found</h1></body></html>"
 general_400_err = "HTTP/1.1 400 Bad Request\nContent-Type: text/html\n\n<html><head><title>Bad Request</title></head><body></body></html>"
 
+JSON_FNAME="activities.json"
+JSON_FPATH= os.getcwd() + '/'
+JSON_ATTR_ACTIVITIES="activities"
+JSON_ATTR_ACT_NAME="activity_name"
+
 """
 This method deletes the record of requested activitie which is indicated by name in client's request message.
 - Special http responses defined in the method(200, 403).
@@ -109,18 +114,16 @@ def actv_server_listen(BUFF_SIZE,ADDR,FORMAT,ROOM_SERVER):
           if a proper request comes,the server should interact with the our simple database(JSON File). 
           Therefore, there are some necessary initializations exists below for accessing the JSON Database
     """
-    JSON_FNAME="activities.json"
-    JSON_FPATH= os.getcwd() + '/'
-    JSON_ATTR_ACTIVITIES="activities"
-    JSON_ATTR_ACT_NAME="activity_name"
 
     while True:
         socket , address = ROOM_SERVER.accept()                                                             ## accept client
         print("\n-------------> [CONNECTION ACCCEPTED HOST IP || ADDRESS] --> " , socket ," || ",address)   ## server log message 
         message=socket.recv(BUFF_SIZE).decode(FORMAT)                                                       ## get client's message
-        if not str(message.split('\n')[0].split(' ')[1]).startswith("/favicon.ico"):                        ## preventing web browser icon 
-          print(f"\n-------------> [CLIENT MESSAGE CAME BELOW] -->\n\n{message}")                           ## server log message
-        
+        try:
+          if not str(message.split('\n')[0].split(' ')[1]).startswith("/favicon.ico"):                        ## preventing web browser icon 
+            print(f"\n-------------> [CLIENT MESSAGE CAME BELOW] -->\n\n{message}")                           ## server log message
+        except Exception as e:
+          logging.error(traceback.format_exc())
         ############################################################ Berin Part ############################################################
         server_response = ""
         parser_response=ap.main(message)

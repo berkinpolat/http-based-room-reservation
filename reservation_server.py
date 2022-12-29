@@ -9,51 +9,31 @@ import os
 general_404_err = "HTTP/1.1 404 Not Found\nContent-Type: text/html\n\n<html><head><title>Error</title></head><body><h1>Page Not Found</h1></body></html>"
 general_400_err = "HTTP/1.1 400 Bad Request\nContent-Type: text/html\n\n<html><head><title>Bad Request</title></head><body></body></html>"
 
+JSON_FNAME="reservations.json"
+JSON_FPATH=os.getcwd() + '/'
+JSON_ATTR_RESERVATIONS="reservations"
+JSON_ATTR_RESERVATION_ID="reservation_id"
+JSON_ATTR_ROOM_NAME="room_name"
+JSON_ATTR_ACT_NAME="activity_name"
+JSON_ATTR_DAY="day"
+JSON_ATTR_INTERVAL="interval" 
 
 def room_reserver(parser_response):
 
-    JSON_FNAME="activities.json"
-    JSON_FPATH= os.getcwd() + '/'
-    JSON_ATTR_ACTIVITIES="activities"
-    JSON_ATTR_ACT_NAME="activity_name"
-
     activity_name = parser_response[3]
-    server_response = activity_server.is_activity_exists(activity_name,JSON_FNAME,JSON_FPATH,JSON_ATTR_ACTIVITIES,JSON_ATTR_ACT_NAME)
+    server_response = activity_server.is_activity_exists(activity_name,activity_server.JSON_FNAME,activity_server.JSON_FPATH,
+                                                        activity_server.JSON_ATTR_ACTIVITIES,activity_server.JSON_ATTR_ACT_NAME)
     if "200 OK" in server_response:
 
-      JSON_FNAME="rooms.json"
-      JSON_FPATH=os.getcwd() + '/'
-      JSON_ATTR_ROOMS="rooms"
-      JSON_ATTR_ROOM_NAME="room_name"
-      JSON_ATTR_SCHED="schedule"
-      JSON_ATTR_DAY="day"
-      JSON_ATTR_UNRES="unres_hours" 
-      JSON_ATTR_RES="res_hours" 
-
-      """If exists, then it contacts with the Room Server and tries to reserve the
-      room for the specified date/hour/duration. If any of the input is invalid, it sends back an HTTP
-      400 Bad Request message. If all the inputs are valid, then it either reserves the room and sends
-      back an HTTP 200 OK message, or it sends back an HTTP 403 Forbidden message indicating
-      that the room is not available. If the room is reserved, a reservation_id is generated (which can be
-      an integer), and an entry is stored for the reservation_id."""
       room_name = parser_response[2]
       day = parser_response[4]
       hour = parser_response[5]  
       duration = parser_response[6] 
       server_response = room_server.reserve_room(room_name,day,hour,duration,
-                      JSON_FNAME,JSON_FPATH,JSON_ATTR_ROOMS,JSON_ATTR_ROOM_NAME,
-                      JSON_ATTR_SCHED,JSON_ATTR_DAY,JSON_ATTR_UNRES,JSON_ATTR_RES)
+                      room_server.JSON_FNAME,room_server.JSON_FPATH,room_server.JSON_ATTR_ROOMS,room_server.JSON_ATTR_ROOM_NAME,
+                      room_server.JSON_ATTR_SCHED,room_server.JSON_ATTR_DAY,room_server.JSON_ATTR_UNRES,room_server.JSON_ATTR_RES)
 
       if "200 OK" in server_response:
-
-        JSON_FNAME="reservations.json"
-        JSON_FPATH=os.getcwd() + '/'
-        JSON_ATTR_RESERVATIONS="reservations"
-        JSON_ATTR_RESERVATION_ID="reservation_id"
-        JSON_ATTR_ROOM_NAME="room_name"
-        JSON_ATTR_ACT_NAME="activity_name"
-        JSON_ATTR_DAY="day"
-        JSON_ATTR_INTERVAL="interval" 
 
         interval= f"{hour}:00 - {int(hour)+int(duration)}:00"
         try:
@@ -89,14 +69,6 @@ case of error relevant error messages will be sent as described above)."""
 def list_availablity_day(parser_response):
     room_name = parser_response[2]
     day = parser_response[3]
-    JSON_FNAME="rooms.json"
-    JSON_FPATH=os.getcwd() + '/'
-    JSON_ATTR_ROOMS="rooms"
-    JSON_ATTR_ROOM_NAME="room_name"      
-    JSON_ATTR_SCHED="schedule"
-    JSON_ATTR_DAY="day"
-    JSON_ATTR_UNRES="unres_hours" 
-    JSON_ATTR_RES="res_hours" 
 
     server_response = room_server.check_availability(room_name,day,
                       JSON_FNAME,JSON_FPATH,JSON_ATTR_ROOMS,JSON_ATTR_ROOM_NAME,
@@ -109,14 +81,6 @@ contacting the Room Server probably several times). (HTTP 200 OK is returned in 
 case of error relevant error messages will be sent as described above)."""
 def list_availablity(parser_response):
     room_name = parser_response[2]
-    JSON_FNAME="rooms.json"
-    JSON_FPATH=os.getcwd() + '/'
-    JSON_ATTR_ROOMS="rooms"
-    JSON_ATTR_ROOM_NAME="room_name"      
-    JSON_ATTR_SCHED="schedule"
-    JSON_ATTR_DAY="day"
-    JSON_ATTR_UNRES="unres_hours" 
-    JSON_ATTR_RES="res_hours" 
     days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     result = []
     for i in range(1,7):
@@ -134,15 +98,6 @@ def list_availablity(parser_response):
 
 def display_reservation_id(parser_response):
 
-    JSON_FNAME="reservations.json"
-    JSON_FPATH=os.getcwd() + '/'
-    JSON_ATTR_RESERVATIONS="reservations"
-    JSON_ATTR_RESERVATION_ID="reservation_id"
-    JSON_ATTR_ROOM_NAME="room_name"
-    JSON_ATTR_ACT_NAME="activity_name"
-    JSON_ATTR_DAY="day"
-    JSON_ATTR_HOUR="hour" 
-    JSON_ATTR_DURATION = "duration"
     res_id = parser_response[2]
     res_details = {}
     LIST_200_OK = f"HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><body><p>Details about Reservation with id {res_id} is {res_details}.</p></body></html>"
@@ -177,14 +132,6 @@ def reservation_server_listen(BUFF_SIZE,ADDR,FORMAT,RESERVATION_SERVER):
         if a proper request comes,the server should interact with the our simple database(JSON File). 
         Therefore, there are some necessary initializations exists below for accessing the JSON Database
     """
-    JSON_FNAME="reservations.json"
-    JSON_FPATH=os.getcwd() + '/'
-    JSON_ATTR_RESERVATIONS="reservations"
-    JSON_ATTR_RESERVATION_ID="reservation_id"
-    JSON_ATTR_ROOM_NAME="room_name"
-    JSON_ATTR_ACT_NAME="activity_name"
-    JSON_ATTR_DAY="day"
-    JSON_ATTR_INTERVAL="interval" 
 
     while True:
         socket , address = RESERVATION_SERVER.accept()                                                             ## accept client
