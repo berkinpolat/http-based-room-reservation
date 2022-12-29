@@ -111,6 +111,7 @@ def check404(request, get_type):
 
 
 def ROOM_client_message_to_url(message):
+    message = message.replace('\r', '')
     message_firstline_arr = message.split('\n')[0].split(' ')
 
     protocol = message_firstline_arr[2].split('/')[0].lower() + "://"
@@ -136,25 +137,3 @@ def main(request):
 
     except AttributeError:
         return NOT_FOUND
-
-reserve_valued="GET /reserve?room=roomname&activity=activityname&day=1&hour=12&duration=1 HTTP/1.1"
-
-favicon  = "GET /favicon.ico HTTP/1.1"
-
-client_full_message = f"""{favicon}
-Host: 127.0.0.1:5050
-Connection: keep-alive
-sec-ch-ua: "Not?A_Brand";v="8", "Chromium";v="108", "Google Chrome";v="108"
-sec-ch-ua-mobile: ?0
-sec-ch-ua-platform: "macOS"
-Upgrade-Insecure-Requests: 1
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,/;q=0.8,application/signed-exchange;v=b3;q=0.9
-Sec-Fetch-Site: none
-Sec-Fetch-Mode: navigate
-Sec-Fetch-User: ?1
-Sec-Fetch-Dest: document
-Accept-Encoding: gzip, deflate, br
-Accept-Language: tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7"""
-
-print(main(client_full_message))
