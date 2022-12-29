@@ -72,14 +72,13 @@ def room_reserver(parser_response):
           with open(f"{JSON_FPATH}{JSON_FNAME}", "w") as f:
             json.dump(json_reservation_database,f)
             return f"HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><body><h1>Reservation Added</h1><p>Reservation added with {RESERVATION_TO_BE_ADDED}.</p></body></html>"
+        except:
+          return general_404_err
+      else:
+        return server_response
 
-      elif "exist" in server_response:
-        return f"HTTP/1.1 403 Forbidden\nContent-Type: text/html\n\n<html><body><h1>Error</h1><p>A room with the name {room_name} does not exists in the database.</p></body></html>"
-      elif "reserved" in server_response:
-        return f"HTTP/1.1 403 Forbidden\nContent-Type: text/html\n\n<html><body><h1>Error</h1><p>A room with the name {room_name} is already reserved.</p></body></html>"
-
-    else
-      return  "HTTP/1.1 404 Not Found\nContent-Type: text/html\n\n<html><head><title>Error</title></head><body><h1>Activity does not exist.</h1></body></html>"
+    else:
+      return  server_response
 
 
 """/listavailability?room=roomname: Lists all the available hours for all days of the week (after
@@ -157,10 +156,10 @@ def display_reservation_id(parser_response):
         res_details = reservation
         break
 
-  if not found_flag:
-    return LIST_403_FORBIDDEN
+    if not found_flag:
+      return LIST_403_FORBIDDEN
 
-  return RMV_200_OK
+    return RMV_200_OK
 
 
 
