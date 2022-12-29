@@ -79,6 +79,7 @@ def check404(request, get_type):
 
 
 def ROOM_client_message_to_url(message):
+    message = message.replace('\r', '')
     message_firstline_arr = message.split('\n')[0].split(' ')
 
     protocol = message_firstline_arr[2].split('/')[0].lower() + "://"
