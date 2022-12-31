@@ -2,7 +2,8 @@ import json
 import os
 import socket 
 import ActivityParser as ap ## Import parser
-
+import logging
+import traceback
 ## HTTP Error messages initialized
 general_404_err = "HTTP/1.1 404 Not Found\nContent-Type: text/html\n\n<html><head><title>Error</title></head><body><h1>Page Not Found</h1></body></html>"
 general_400_err = "HTTP/1.1 400 Bad Request\nContent-Type: text/html\n\n<html><head><title>Bad Request</title></head><body></body></html>"
@@ -118,7 +119,7 @@ def actv_server_listen(BUFF_SIZE,ADDR,FORMAT,ROOM_SERVER):
     while True:
         socket , address = ROOM_SERVER.accept()                                                             ## accept client
         print("\n-------------> [CONNECTION ACCCEPTED HOST IP || ADDRESS] --> " , socket ," || ",address)   ## server log message 
-        message=socket.recv(BUFF_SIZE).decode(FORMAT)                                                       ## get client's message
+        message=socket.recv(BUFF_SIZE).decode(FORMAT)
         try:
           if not str(message.split('\n')[0].split(' ')[1]).startswith("/favicon.ico"):                        ## preventing web browser icon 
             print(f"\n-------------> [CLIENT MESSAGE CAME BELOW] -->\n\n{message}")                           ## server log message

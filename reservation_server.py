@@ -1,8 +1,6 @@
 import json
 import socket 
 import ReservationParser as res_parser ## Import parser
-import activity_server
-import room_server
 import os
 
 ## HTTP Error messages initialized
@@ -17,23 +15,29 @@ JSON_ATTR_ROOM_NAME="room_name"
 JSON_ATTR_ACT_NAME="activity_name"
 JSON_ATTR_DAY="day"
 JSON_ATTR_INTERVAL="interval" 
-
 def room_reserver(parser_response):
 
     activity_name = parser_response[3]
-    server_response = activity_server.is_activity_exists(activity_name,activity_server.JSON_FNAME,activity_server.JSON_FPATH,
-                                                        activity_server.JSON_ATTR_ACTIVITIES,activity_server.JSON_ATTR_ACT_NAME)
-    if "200 OK" in server_response:
-
+    # Send the HTTP GET request
+    RESERVATION_TO_ACTIVITY_SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   ## create socket for room server
+    RESERVATION_TO_ACTIVITY_SERVER.connect(('localhost', 5052))
+    request = f'GET /check?name={activity_name} HTTP/1.1\r\nHost: localhost:5052\r\n\r\n'
+    RESERVATION_TO_ACTIVITY_SERVER.sendall(request.encode())
+    response_str = RESERVATION_TO_ACTIVITY_SERVER.recv(2048).decode()
+    RESERVATION_TO_ACTIVITY_SERVER.close()
+    if "200 OK" in response_str:
       room_name = parser_response[2]
       day = parser_response[4]
       hour = parser_response[5]  
       duration = parser_response[6] 
-      server_response = room_server.reserve_room(room_name,day,hour,duration,
-                      room_server.JSON_FNAME,room_server.JSON_FPATH,room_server.JSON_ATTR_ROOMS,room_server.JSON_ATTR_ROOM_NAME,
-                      room_server.JSON_ATTR_SCHED,room_server.JSON_ATTR_DAY,room_server.JSON_ATTR_UNRES,room_server.JSON_ATTR_RES)
-
-      if "200 OK" in server_response:
+       # Send the HTTP GET request
+      RESERVATION_TO_ROOM_SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   ## create socket for room server
+      RESERVATION_TO_ROOM_SERVER.connect(('localhost',5051))
+      request = f'GET /reserve?name={room_name}&day={day}&hour={hour}&duration={duration} HTTP/1.1\r\nHost: localhost:5051\r\n\r\n'
+      RESERVATION_TO_ROOM_SERVER.sendall(request.encode())
+      response_str = RESERVATION_TO_ROOM_SERVER.recv(2048).decode()
+      RESERVATION_TO_ROOM_SERVER.close()
+      if "200 OK" in response_str:
 
         interval= f"{hour}:00 - {int(hour)+int(duration)}:00"
         try:
@@ -56,10 +60,10 @@ def room_reserver(parser_response):
         except:
           return general_404_err
       else:
-        return server_response
+        return response_str
 
     else:
-      return  server_response
+      return  response_str
 
 
 """/listavailability?room=roomname: Lists all the available hours for all days of the week (after
@@ -67,14 +71,17 @@ contacting the Room Server probably several times). (HTTP 200 OK is returned in 
 case of error relevant error messages will be sent as described above)."""
 
 def list_availablity_day(parser_response):
+
     room_name = parser_response[2]
     day = parser_response[3]
+    RESERVATION_TO_ROOM_SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   ## create socket for room server
+    RESERVATION_TO_ROOM_SERVER.connect(('localhost', 5051))
+    request = f'GET /checkavailability?name={room_name}&day={day} HTTP/1.1\r\nHost: localhost:5051\r\n\r\n'
+    RESERVATION_TO_ROOM_SERVER.sendall(request.encode())
+    response = RESERVATION_TO_ROOM_SERVER.recv(2048).decode()
+    RESERVATION_TO_ROOM_SERVER.close()
 
-    server_response = room_server.check_availability(room_name,day,
-                      JSON_FNAME,JSON_FPATH,JSON_ATTR_ROOMS,JSON_ATTR_ROOM_NAME,
-                      JSON_ATTR_SCHED,JSON_ATTR_DAY,JSON_ATTR_UNRES)
-
-    return server_response
+    return response
 
 """Lists all the available hours for all days of the week (after
 contacting the Room Server probably several times). (HTTP 200 OK is returned in success. In
@@ -84,16 +91,17 @@ def list_availablity(parser_response):
     days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     result = []
     for i in range(1,7):
-
-      server_response = room_server.check_availability(room_name,i,
-                        JSON_FNAME,JSON_FPATH,JSON_ATTR_ROOMS,JSON_ATTR_ROOM_NAME,
-                        JSON_ATTR_SCHED,JSON_ATTR_DAY,JSON_ATTR_UNRES)
-      body = server_response.split("-")[2]
-      iterate_day = f"{days_of_week[i-1]}: {body}"
+      RESERVATION_TO_ROOM_SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   ## create socket for room server
+      RESERVATION_TO_ROOM_SERVER.connect(('localhost',5051))
+      request = f'GET /checkavailability?name={room_name}&day={i} HTTP/1.1\r\nHost: localhost:5051\r\n\r\n'
+      RESERVATION_TO_ROOM_SERVER.sendall(request.encode())
+      response_str = RESERVATION_TO_ROOM_SERVER.recv(2048).decode()
+      RESERVATION_TO_ROOM_SERVER.close()
+      body = response_str.split("-")[2]
+      iterate_day = f"{days_of_week[i-1]}: {body}\n"
       result.append(iterate_day)
     
     printed_result = ('\n'.join(map(str, result)))
-
     return f"HTTP/1.1 200 OK\nContent-Type: text/plain\n\nAvailable hours for the {room_name} on\n\n{printed_result}"
 
 def display_reservation_id(parser_response):
@@ -139,7 +147,7 @@ def reservation_server_listen(BUFF_SIZE,ADDR,FORMAT,RESERVATION_SERVER):
         message=socket.recv(BUFF_SIZE).decode(FORMAT)                                                       ## get client's message
         if not str(message.split('\n')[0].split(' ')[1]).startswith("/favicon.ico"):                        ## preventing web browser icon 
           print(f"\n-------------> [CLIENT MESSAGE CAME BELOW] -->\n\n{message}")                           ## server log message
-        
+        print(message)
         ############################################################ Berin Part ############################################################
 
         server_response = ""
@@ -155,13 +163,14 @@ def reservation_server_listen(BUFF_SIZE,ADDR,FORMAT,RESERVATION_SERVER):
           elif str(parser_response[0])==str(200):     
 
             if str(parser_response[1])=="reserve":
-                server_response=room_reserver(parser_response)
+              server_response=room_reserver(parser_response)
             elif str(parser_response[1])=="listavailability":
               if (len(parser_response) == 3):
                   server_response=list_availablity(parser_response)
-              else:
+              else:                 
                   server_response=list_availablity_day(parser_response)
-            elif str(parser_response[1])=="display":
+
+            elif str(parser_response[1])=="display":                 
                 server_response=display_reservation_id(parser_response)
         except Exception as e:
           server_response=general_404_err  
@@ -185,10 +194,10 @@ if __name__ == "__main__":
     SERVER = socket.gethostbyname(socket.gethostname())               ## get hos ip
     ADDR = (SERVER, PORT)                                             ## fully address tupple
     FORMAT = 'utf-8'                                                  ## encode/decode format
-    
-    ## Room Server necessary initializations    
-    RESERVATION_SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   ## create socket
+  
+    RESERVATION_SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   ## create socket for reservation server
     RESERVATION_SERVER.bind(ADDR)                                            ## binding
-    RESERVATION_SERVER.listen()                                              ## server up
+    RESERVATION_SERVER.listen()                                              ## server up  
+
     print(f"\n////////////////////////// -> SERVER IS CREATED AND READY TO LISTEN WITH THE ADDRESS OF {ADDR}] <- \\\\\\\\\\\\\\\\\\\\\\\\\\\n")
     reservation_server_listen(BUFF_SIZE,ADDR,FORMAT,RESERVATION_SERVER)
