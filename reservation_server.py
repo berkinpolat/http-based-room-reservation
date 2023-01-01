@@ -19,9 +19,10 @@ def room_reserver(parser_response):
 
     activity_name = parser_response[3]
     # Send the HTTP GET request
-    RESERVATION_TO_ACTIVITY_SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   ## create socket for activity server
-    RESERVATION_TO_ACTIVITY_SERVER.connect(('localhost', 5052))
-    request = f'GET /check?name={activity_name} HTTP/1.1\r\nHost: localhost:5052\r\n\r\n'
+    RESERVATION_TO_ACTIVITY_SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   ## create socket for room server
+    ip_name = socket.gethostbyname(socket.gethostname())
+    RESERVATION_TO_ACTIVITY_SERVER.connect((ip_name, 5052))
+    request = f'GET /check?name={activity_name} HTTP/1.1\r\nHost: {ip_name}:5052\r\n\r\n'
     RESERVATION_TO_ACTIVITY_SERVER.sendall(request.encode())
     response_str = RESERVATION_TO_ACTIVITY_SERVER.recv(2048).decode()
     RESERVATION_TO_ACTIVITY_SERVER.close()
@@ -30,10 +31,10 @@ def room_reserver(parser_response):
       day = parser_response[4]
       hour = parser_response[5]  
       duration = parser_response[6] 
-      # Send the HTTP GET request
+       # Send the HTTP GET request
       RESERVATION_TO_ROOM_SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   ## create socket for room server
-      RESERVATION_TO_ROOM_SERVER.connect(('localhost',5051))
-      request = f'GET /reserve?name={room_name}&day={day}&hour={hour}&duration={duration} HTTP/1.1\r\nHost: localhost:5051\r\n\r\n'
+      RESERVATION_TO_ROOM_SERVER.connect((ip_name,5051))
+      request = f'GET /reserve?name={room_name}&day={day}&hour={hour}&duration={duration} HTTP/1.1\r\nHost: {ip_name}:5051\r\n\r\n'
       RESERVATION_TO_ROOM_SERVER.sendall(request.encode())
       response_str = RESERVATION_TO_ROOM_SERVER.recv(2048).decode()
       RESERVATION_TO_ROOM_SERVER.close()
@@ -71,12 +72,12 @@ contacting the Room Server probably several times). (HTTP 200 OK is returned in 
 case of error relevant error messages will be sent as described above)."""
 
 def list_availablity_day(parser_response):
-
+    ip_name = socket.gethostbyname(socket.gethostname())
     room_name = parser_response[2]
     day = parser_response[3]
     RESERVATION_TO_ROOM_SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   ## create socket for room server
-    RESERVATION_TO_ROOM_SERVER.connect(('localhost', 5051))
-    request = f'GET /checkavailability?name={room_name}&day={day} HTTP/1.1\r\nHost: localhost:5051\r\n\r\n'
+    RESERVATION_TO_ROOM_SERVER.connect((ip_name, 5051))
+    request = f'GET /checkavailability?name={room_name}&day={day} HTTP/1.1\r\nHost: {ip_name}:5051\r\n\r\n'
     RESERVATION_TO_ROOM_SERVER.sendall(request.encode())
     response = RESERVATION_TO_ROOM_SERVER.recv(2048).decode()
     RESERVATION_TO_ROOM_SERVER.close()
@@ -87,13 +88,14 @@ def list_availablity_day(parser_response):
 contacting the Room Server probably several times). (HTTP 200 OK is returned in success. In
 case of error relevant error messages will be sent as described above)."""
 def list_availablity(parser_response):
+    ip_name = socket.gethostbyname(socket.gethostname())
     room_name = parser_response[2]
     days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     result = []
     for i in range(1,7):
       RESERVATION_TO_ROOM_SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   ## create socket for room server
-      RESERVATION_TO_ROOM_SERVER.connect(('localhost',5051))
-      request = f'GET /checkavailability?name={room_name}&day={i} HTTP/1.1\r\nHost: localhost:5051\r\n\r\n'
+      RESERVATION_TO_ROOM_SERVER.connect((ip_name,5051))
+      request = f'GET /checkavailability?name={room_name}&day={i} HTTP/1.1\r\nHost: {ip_name}:5051\r\n\r\n'
       RESERVATION_TO_ROOM_SERVER.sendall(request.encode())
       response_str = RESERVATION_TO_ROOM_SERVER.recv(2048).decode()
       RESERVATION_TO_ROOM_SERVER.close()
@@ -127,6 +129,7 @@ def display_reservation_id(parser_response):
 
     return f"HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><body><p>Details about Reservation with id {res_id} is {res_details}.</p></body></html>"
 
+
 """
 This method represents the process of server listening for the client
 There are some variables defined which are useful to connect our JSON Database.
@@ -143,8 +146,10 @@ def reservation_server_listen(BUFF_SIZE,ADDR,FORMAT,RESERVATION_SERVER):
         socket , address = RESERVATION_SERVER.accept()                                                      ## accept client
         print("\n-------------> [CONNECTION ACCCEPTED HOST IP || ADDRESS] --> " , socket ," || ",address)   ## server log message
         message=socket.recv(BUFF_SIZE).decode(FORMAT)                                                       ## get client's message
-        print(f"\n-------------> [CLIENT MESSAGE CAME BELOW] -->\n\n{message}")                             ## server log message
+        if not str(message.split('\n')[0].split(' ')[1]).startswith("/favicon.ico"):                        ## preventing web browser icon 
+          print(f"\n-------------> [CLIENT MESSAGE CAME BELOW] -->\n\n{message}")                           ## server log message
         print(message)
+
         server_response = ""
         parser_response=res_parser.main(message)
 
@@ -175,7 +180,6 @@ def reservation_server_listen(BUFF_SIZE,ADDR,FORMAT,RESERVATION_SERVER):
         socket.close()                                                                                                ## end session
         print(f"\n-------------> [CONNECTION CLOSING] --> Connection with {address} ended!")                          ## server log message
         print("\n********************************************   Cilent Session Log Messages Above   *********************************************************")
-
 
 ## Main method
 if __name__ == "__main__":

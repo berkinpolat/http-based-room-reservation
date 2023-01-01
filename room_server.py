@@ -231,6 +231,7 @@ def room_server_listen(BUFF_SIZE,ADDR,FORMAT,ROOM_SERVER):
         print(f"\n-------------> [CONNECTION CLOSING] --> Connection with {address} ended!")                          ## server log message
         print("\n********************************************   Cilent Session Log Messages Above   *********************************************************")
 
+
 ## Main method
 if __name__ == "__main__":
 
@@ -245,5 +246,5 @@ if __name__ == "__main__":
     ROOM_SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   ## create socket
     ROOM_SERVER.bind(ADDR)                                            ## binding
     ROOM_SERVER.listen()                                              ## server up
-    print(f"\n////////////////////////// -> ROOM SERVER IS CREATED AND READY TO LISTEN WITH THE ADDRESS OF {ADDR}] <- \\\\\\\\\\\\\\\\\\\\\\\\\\\n")
+    print(f"\n/////////////////////////// -> ROOM SERVER IS CREATED AND READY TO LISTEN WITH THE ADDRESS OF {ADDR}] <- \\\\\\\\\\\\\\\\\\\\\\\\\\\\n")
     room_server_listen(BUFF_SIZE,ADDR,FORMAT,ROOM_SERVER)
