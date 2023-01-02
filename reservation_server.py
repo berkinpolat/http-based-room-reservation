@@ -7,6 +7,9 @@ import os
 general_404_err = "HTTP/1.1 404 Not Found\nContent-Type: text/html\n\n<html><head><title>Error</title></head><body><h1>Page Not Found</h1></body></html>"
 general_400_err = "HTTP/1.1 400 Bad Request\nContent-Type: text/html\n\n<html><head><title>Bad Request</title></head><body></body></html>"
 
+"""There are some variables defined which are 
+useful to connect our JSON Database."""
+
 JSON_FNAME="reservations.json"
 JSON_FPATH=os.getcwd() + '/'
 JSON_ATTR_RESERVATIONS="reservations"
@@ -66,15 +69,11 @@ def room_reserver(parser_response):
     else:
       return  response_str
 
-
-"""/listavailability?room=roomname: Lists all the available hours for all days of the week (after
-contacting the Room Server probably several times). (HTTP 200 OK is returned in success. In
-case of error relevant error messages will be sent as described above)."""
-
 def list_availablity_day(parser_response):
     ip_name = socket.gethostbyname(socket.gethostname())
     room_name = parser_response[2]
     day = parser_response[3]
+    # Send the HTTP GET request
     RESERVATION_TO_ROOM_SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   ## create socket for room server
     RESERVATION_TO_ROOM_SERVER.connect((ip_name, 5051))
     request = f'GET /checkavailability?name={room_name}&day={day} HTTP/1.1\r\nHost: {ip_name}:5051\r\n\r\n'
@@ -93,6 +92,7 @@ def list_availablity(parser_response):
     days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     result = []
     for i in range(1,7):
+      # Send the HTTP GET request
       RESERVATION_TO_ROOM_SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   ## create socket for room server
       RESERVATION_TO_ROOM_SERVER.connect((ip_name,5051))
       request = f'GET /checkavailability?name={room_name}&day={i} HTTP/1.1\r\nHost: {ip_name}:5051\r\n\r\n'
@@ -132,15 +132,8 @@ def display_reservation_id(parser_response):
 
 """
 This method represents the process of server listening for the client
-There are some variables defined which are useful to connect our JSON Database.
 """
 def reservation_server_listen(BUFF_SIZE,ADDR,FORMAT,RESERVATION_SERVER):
-
-    """
-        While server listening the incomning requests from clients, 
-        if a proper request comes,the server should interact with the our simple database(JSON File). 
-        Therefore, there are some necessary initializations exists below for accessing the JSON Database
-    """
 
     while True:
         socket , address = RESERVATION_SERVER.accept()                                                      ## accept client
