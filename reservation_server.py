@@ -139,8 +139,7 @@ def reservation_server_listen(BUFF_SIZE,ADDR,FORMAT,RESERVATION_SERVER):
         socket , address = RESERVATION_SERVER.accept()                                                      ## accept client
         print("\n-------------> [CONNECTION ACCCEPTED HOST IP || ADDRESS] --> " , socket ," || ",address)   ## server log message
         message=socket.recv(BUFF_SIZE).decode(FORMAT)                                                       ## get client's message
-        if not str(message.split('\n')[0].split(' ')[1]).startswith("/favicon.ico"):                        ## preventing web browser icon 
-          print(f"\n-------------> [CLIENT MESSAGE CAME BELOW] -->\n\n{message}")                           ## server log message
+        print(f"\n-------------> [CLIENT MESSAGE CAME BELOW] -->\n\n{message}")                           ## server log message
         print(message)
 
         server_response = ""
