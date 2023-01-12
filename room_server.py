@@ -99,7 +99,6 @@ def reserve_room(given_room_name,given_day,given_hour,given_duration,
   given_day = int(given_day)
   given_hour = int(given_hour)
   given_duration = int(given_duration)
-
   days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
   DAY_STRING=days_of_week[given_day - 1]
   get_time_range = lambda hour, duration: f"{given_hour}:00 - {given_hour + given_duration}:00"
@@ -199,7 +198,6 @@ def room_server_listen(BUFF_SIZE,ADDR,FORMAT,ROOM_SERVER):
         print("\n-------------> [CONNECTION ACCCEPTED HOST IP || ADDRESS] --> " , socket ," || ",address)   ## server log message
         message=socket.recv(BUFF_SIZE).decode(FORMAT)                                                       ## get client's message
         print(f"\n-------------> [CLIENT MESSAGE CAME BELOW] -->\n\n{message}")                             ## server log message
-        
         server_response = ""
         parser_response=rp.main(message)
         try:
@@ -230,7 +228,6 @@ def room_server_listen(BUFF_SIZE,ADDR,FORMAT,ROOM_SERVER):
         socket.close()                                                                                                ## end session
         print(f"\n-------------> [CONNECTION CLOSING] --> Connection with {address} ended!")                          ## server log message
         print("\n********************************************   Cilent Session Log Messages Above   *********************************************************")
-
 
 ## Main method
 if __name__ == "__main__":
