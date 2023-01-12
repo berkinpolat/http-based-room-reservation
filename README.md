@@ -1,11 +1,11 @@
 
 # Socket Programming – HTTP-Based Room Reservation
 
-In this project, an HTTP server that acts as a room reservation server. There are two other HTTP servers for tracking rooms and activities as well. All the three server programs take single argument which specifies the port number. After starting a server, you can connect to it using any web browser or curl on the same machine with http://localhost:‹port›/ (or from another machine, by replacing localhost with the IP address).# 
+In this project, there is an HTTP server that acts as a room reservation server. There are two other HTTP servers for tracking rooms and activities as well. All the three server programs take single argument which specifies the port number. After starting a server, you can connect to it using any web browser or curl on the same machine with http://localhost:‹port›/ (or from another machine, by replacing localhost with the IP address).
 ## Room Server
-The server starts out with empty set of rooms, and it also maintains a simple database. It must support several kinds of GET requests:
+The server starts out with empty set of rooms, and it also maintains a simple database. It supports several kinds of GET requests:
 
-**/add?name=roomname:** Adds a new room. If the room is already added, this server should return an HTTP 403 Forbidden message indicating that the room already exists in the database. Otherwise, it adds the room to the database, and sends back a 200 OK message including an HTML file in the body that informs that the room is added.
+**/add?name=roomname:** Adds a new room. If the room is already added, this server returns an HTTP 403 Forbidden message indicating that the room already exists in the database. Otherwise, it adds the room to the database, and sends back a 200 OK message including an HTML file in the body that informs that the room is added.
 
 **/remove?name=roomname:** Removes the room with name=roomname. If the room exists, it removes the room from the database and sends back HTTP 200 OK message (including relevant info in the body as an HTML object). If the room doesn’t exist, then it sends back an HTTP 403 Forbidden message.
 
@@ -18,16 +18,16 @@ or if x is not a valid input then it sends back an HTTP 400 Bad Request message.
 
 ## Activity Server
 
-The server starts out with empty set of activities, and it also maintains a simple database. It must support several kinds of GET requests:
+The server starts out with empty set of activities, and it also maintains a simple database. It supports several kinds of GET requests:
 
-**/add?name=activityname:** Adds a new activity. If the activity is already added, this server should return an HTTP 403 Forbidden message indicating that the activity already exists in the database. Otherwise, it adds the activity to the database, and sends back a 200 OK message including an HTML file in the body that informs that the activity is added.
+**/add?name=activityname:** Adds a new activity. If the activity is already added, this server returns an HTTP 403 Forbidden message indicating that the activity already exists in the database. Otherwise, it adds the activity to the database, and sends back a 200 OK message including an HTML file in the body that informs that the activity is added.
 
 **/remove?name=activityname:** Removes the activity with name=activityname. If the activity exists, it removes the activity from the database and sends back HTTP 200 OK message (including relevant info in the body as an HTML object). If the activity doesn’t exist, then it sends back an HTTP 403 Forbidden message.
 
 **/check?name=activityname:** Checks whether there exists an activity with name=activityname. If the activity exists, it sends back an HTTP 200 OK message, otherwise it sends HTTP 404 Not Found message.
 ## Reservation Server
 
-This server is for reserving rooms for activities, and it also maintains a simple database. End users will only access this server. It must support several kinds of GET requests:
+This server is for reserving rooms for activities, and it also maintains a simple database. End users will only access this server. It supports several kinds of GET requests:
 
 **/reserve?room=roomname&activity=activityname&day=x&hour=y&duration=z:** When this request is received, the server first checks whether there exists an activity with name activityname by contacting the Activity Server. If no such activity exists it sends back an HTTP 404 Not Found message. If exists, then it contacts with the Room Server and tries to reserve the room for the specified date / hour / duration. If any of the input is invalid, it sends back an HTTP 400 Bad Request message. If all the inputs are valid, then it either reserves the room and sends back an HTTP 200 OK message, or it sends back an HTTP 403 Forbidden message indicating that the room is not available. If the room is reserved, a reservation_id is generated (which can be an integer), and an entry is stored for the reservation_id.
 
@@ -36,6 +36,7 @@ This server is for reserving rooms for activities, and it also maintains a simpl
 **/listavailability?room=roomname:** Lists all the available hours for all days of the week (after contacting the Room Server probably several times). (HTTP 200 OK is returned in success. In case of error relevant error messages will be sent as described above).
 
 **/display?id=reservation_id:** Returns the details of the reservation with the specified id. If the reservation_id does not exist, it returns back an HTTP 404 Not Found message.
+
 ## Curl
 
 ```
