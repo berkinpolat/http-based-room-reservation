@@ -7,6 +7,15 @@ import os
 general_404_err = "HTTP/1.1 404 Not Found\nContent-Type: text/html\n\n<html><head><title>Error</title></head><body><h1>Page Not Found</h1></body></html>"
 general_400_err = "HTTP/1.1 400 Bad Request\nContent-Type: text/html\n\n<html><head><title>Bad Request</title></head><body></body></html>"
 
+JSON_FNAME="rooms.json"
+JSON_FPATH=os.getcwd() + '/'
+JSON_ATTR_ROOMS="rooms"
+JSON_ATTR_ROOM_NAME="room_name"
+JSON_ATTR_SCHED="schedule"
+JSON_ATTR_DAY="day"
+JSON_ATTR_UNRES="unres_hours" 
+JSON_ATTR_RES="res_hours" 
+
 """
 This method checks the availabilty of the room by interacting JSON Database. Method interacts the JSON Database 
 by using its parameter which are arranged in main. 
@@ -20,6 +29,7 @@ def check_availability(given_name,given_day,
                       JSON_FNAME,JSON_FPATH,JSON_ATTR_ROOMS,JSON_ATTR_ROOM_NAME,
                       JSON_ATTR_SCHED,JSON_ATTR_DAY,JSON_ATTR_UNRES):
     days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    given_day = int(given_day)
     DAY_STRING=days_of_week[given_day - 1]
     try:
         with open(f"{JSON_FPATH}{JSON_FNAME}", "r") as f:
@@ -32,7 +42,7 @@ def check_availability(given_name,given_day,
                         available_hours = schedule[JSON_ATTR_UNRES]
                         formatted_hours = [f"{hour}:00" for hour in available_hours]
                         body = " ".join(formatted_hours)
-                        return f"HTTP/1.1 200 OK\nContent-Type: text/plain\n\nAvailable hours for the {given_name} on {DAY_STRING}: {body}"
+                        return f"HTTP/1.1 200 OK\nContent-Type: text/plain\n\nAvailable hours for the {given_name} on {DAY_STRING} -  {body}"
         
         return f"HTTP/1.1 404 Not Found\nContent-Type: text/html\n\n<html><head><title>Error</title></head><body><h1>Not Found</h1><p>No room named {given_name} found on the database.</p></body></html>"
     except Exception as e:
@@ -86,6 +96,9 @@ def reserve_room(given_room_name,given_day,given_hour,given_duration,
                       JSON_FNAME,JSON_FPATH,JSON_ATTR_ROOMS,JSON_ATTR_ROOM_NAME,
                       JSON_ATTR_SCHED,JSON_ATTR_DAY,JSON_ATTR_UNRES,JSON_ATTR_RES):
   
+  given_day = int(given_day)
+  given_hour = int(given_hour)
+  given_duration = int(given_duration)
   days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
   DAY_STRING=days_of_week[given_day - 1]
   get_time_range = lambda hour, duration: f"{given_hour}:00 - {given_hour + given_duration}:00"
@@ -179,24 +192,12 @@ def room_server_listen(BUFF_SIZE,ADDR,FORMAT,ROOM_SERVER):
           if a proper request comes,the server should interact with the our simple database(JSON File). 
           Therefore, there are some necessary initializations exists below for accessing the JSON Database
     """
-    JSON_FNAME="rooms.json"
-    JSON_FPATH=os.getcwd() + '/'
-    JSON_ATTR_ROOMS="rooms"
-    JSON_ATTR_ROOM_NAME="room_name"
-    JSON_ATTR_SCHED="schedule"
-    JSON_ATTR_DAY="day"
-    JSON_ATTR_UNRES="unres_hours" 
-    JSON_ATTR_RES="res_hours" 
     
     while True:
         socket , address = ROOM_SERVER.accept()                                                             ## accept client
         print("\n-------------> [CONNECTION ACCCEPTED HOST IP || ADDRESS] --> " , socket ," || ",address)   ## server log message
         message=socket.recv(BUFF_SIZE).decode(FORMAT)                                                       ## get client's message
-        if not str(message.split('\n')[0].split(' ')[1]).startswith("/favicon.ico"):                        ## preventing web browser icon 
-          print(f"\n-------------> [CLIENT MESSAGE CAME BELOW] -->\n\n{message}")                           ## server log message
-        
-        ############################################################ Berin Part ############################################################
-
+        print(f"\n-------------> [CLIENT MESSAGE CAME BELOW] -->\n\n{message}")                             ## server log message
         server_response = ""
         parser_response=rp.main(message)
         try:
@@ -221,20 +222,19 @@ def room_server_listen(BUFF_SIZE,ADDR,FORMAT,ROOM_SERVER):
                       JSON_ATTR_SCHED,JSON_ATTR_DAY,JSON_ATTR_UNRES,JSON_ATTR_RES)
         except Exception as e:
           server_response=general_404_err        
-        ############################################################ Berin Part ############################################################
 
         socket.send(server_response.encode(FORMAT))                                                                   ## sending proper http response to client
         print("-------------> [SENDING MESSAGE TO CLIENT] --> PROPER HTTP MESSAGE WILL BE SHOWN IN THE WEB BROWSER")  ## server log message
         socket.close()                                                                                                ## end session
         print(f"\n-------------> [CONNECTION CLOSING] --> Connection with {address} ended!")                          ## server log message
-        print("\n*****************************************************************************************************************************")
+        print("\n********************************************   Cilent Session Log Messages Above   *********************************************************")
 
 ## Main method
 if __name__ == "__main__":
 
     ## Socket attributes initializations
     BUFF_SIZE = 2048                                                  ## set the chunk size
-    PORT = 5050                                                       ## set port for server
+    PORT = 5051                                                       ## set port for server
     SERVER = socket.gethostbyname(socket.gethostname())               ## get hos ip
     ADDR = (SERVER, PORT)                                             ## fully address tupple
     FORMAT = 'utf-8'                                                  ## encode/decode format
@@ -243,5 +243,5 @@ if __name__ == "__main__":
     ROOM_SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   ## create socket
     ROOM_SERVER.bind(ADDR)                                            ## binding
     ROOM_SERVER.listen()                                              ## server up
-    print(f"\n////////////////////////// -> SERVER IS CREATED AND READY TO LISTEN WITH THE ADDRESS OF {ADDR}] <- \\\\\\\\\\\\\\\\\\\\\\\\\\\n")
+    print(f"\n/////////////////////////// -> ROOM SERVER IS CREATED AND READY TO LISTEN WITH THE ADDRESS OF {ADDR}] <- \\\\\\\\\\\\\\\\\\\\\\\\\\\\n")
     room_server_listen(BUFF_SIZE,ADDR,FORMAT,ROOM_SERVER)
